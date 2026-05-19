@@ -221,12 +221,10 @@
         .gauntlet-arrow { text-align: center; font-size: 1.5rem; color: #334155; margin: -5px 0; }
 
         /* Tab 7: Master Control Room */
-        .kpi-row {
-            display: flex; gap: 15px; margin-bottom: 20px;
-        }
+        .kpi-row { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
         .kpi-box {
             flex: 1; background: #0f172a; border: 1px solid #334155; 
-            border-radius: 8px; padding: 15px; text-align: center;
+            border-radius: 8px; padding: 15px; text-align: center; min-width: 150px;
         }
         .kpi-title { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;}
         .kpi-value { font-size: 1.8rem; font-family: monospace; font-weight: bold; margin-top: 5px; color: var(--text-main);}
@@ -284,8 +282,6 @@
         <button class="tab-btn active" style="border: 1px solid var(--accent);" onclick="openTab('tab-master')">7. Master Control Room</button>
     </div>
 
-    <!-- TAB 1-6 content hidden for brevity in comment, same as previous -->
-    <!-- TAB 1: Capital Stack -->
     <div id="tab-capital" class="tab-content">
         <h2>The Capital Stack</h2>
         <p>Simulation of a <strong>~$875,000</strong> balance sheet structure. Watch how automated risk frameworks physically withdraw the $250k of active trading capital into the working capital reserve during market stress.</p>
@@ -327,7 +323,6 @@
         </div>
     </div>
 
-    <!-- TAB 2: Kill Switches -->
     <div id="tab-killswitch" class="tab-content">
         <h2>Automated Kill-Switches</h2>
         <div class="grid-2">
@@ -360,7 +355,6 @@
         </div>
     </div>
 
-    <!-- TAB 3: Pipeline -->
     <div id="tab-pipeline" class="tab-content">
         <h2>The Deployment Pipeline</h2>
         <div class="grid-2">
@@ -381,7 +375,6 @@
         </div>
     </div>
 
-    <!-- TAB 4: Markouts -->
     <div id="tab-markout" class="tab-content">
         <h2>Markout Actions & Toxic Flow</h2>
         <div class="grid-2">
@@ -399,7 +392,6 @@
         </div>
     </div>
 
-    <!-- TAB 5: Multi-Sig -->
     <div id="tab-multisig" class="tab-content">
         <h2>Treasury Multi-Sig Workflow</h2>
         <div class="grid-2">
@@ -419,7 +411,6 @@
         </div>
     </div>
 
-    <!-- TAB 6: Data Gauntlet -->
     <div id="tab-gauntlet" class="tab-content">
         <h2>The Validation Gauntlet</h2>
         <div class="grid-2">
@@ -451,7 +442,6 @@
         </div>
     </div>
 
-    <!-- TAB 7: MASTER CONTROL ROOM -->
     <div id="tab-master" class="tab-content active">
         <h2>Master Control Room: Live Orchestration</h2>
         <p>Watch how the individual layers (Data, Toxicity, Inventory) communicate in real-time to protect the $250k trading allocation. Select a market scenario below.</p>
@@ -511,8 +501,7 @@
             <div class="control-panel">
                 <h3 style="margin-top:0;">Execution & Risk Event Log</h3>
                 <div class="terminal-log" id="mc-log">
-                    <!-- Logs injected by JS -->
-                </div>
+                    </div>
             </div>
         </div>
 
@@ -528,7 +517,7 @@
     </div>
 
     <script>
-        // --- Shared Logic ---
+        // --- Shared Helper Logic ---
         let globalScore = 100;
         function updateGlobalScore() {
             const display = document.getElementById('global-score');
@@ -546,28 +535,254 @@
             event.currentTarget.classList.add('active');
         }
 
-        // --- Original Tabs Code (Condensed) ---
-        function updateCapitalStack() { /* ... Same as previous logic ... */ }
-        function updateKillSwitches() { /* ... Same as previous logic ... */ }
-        function setPipeline(stage, el) { /* ... Same as previous logic ... */ }
-        
-        // Chart init for Tab 4
+        // --- Tab 1 Logic: Capital Stack ---
+        function updateCapitalStack() {
+            const drawdown = parseFloat(document.getElementById('drawdown-slider').value);
+            document.getElementById('drawdown-val-badge').innerText = drawdown.toFixed(1) + "%";
+            
+            const rBar = document.getElementById('bar-reserve');
+            const lBar = document.getElementById('bar-locked');
+            const tBar = document.getElementById('bar-trading');
+            const eBar = document.getElementById('bar-exp');
+            const msg = document.getElementById('drawdown-msg');
+
+            let exp = 25000;
+            let locked = 100000;
+            let trading = 250000;
+            let reserve = 500000; 
+
+            if (drawdown < 5) {
+                tBar.style.width = "28%"; rBar.style.width = "57%";
+                msg.innerText = "Market Status: Normal. Full $250k trading capital deployed to capture edge.";
+                msg.style.color = "var(--success)";
+                globalScore = 100;
+            } else if (drawdown < 15) {
+                trading = 100000;
+                reserve = 650000;
+                tBar.style.width = "11%"; rBar.style.width = "74%";
+                msg.innerText = "Market Status: Elevated Stress. Algorithms pulling liquidity and routing funds back to working capital.";
+                msg.style.color = "var(--warning)";
+                globalScore = 65;
+            } else {
+                trading = 0;
+                reserve = 750000;
+                tBar.style.width = "0%"; rBar.style.width = "85%";
+                msg.innerText = "Market Status: Extreme Volatility. Trading halted. Active capital completely withdrawn.";
+                msg.style.color = "var(--danger)";
+                globalScore = 20;
+            }
+
+            document.getElementById('amt-reserve').innerText = formatCurrency(reserve);
+            document.getElementById('amt-locked').innerText = formatCurrency(locked);
+            document.getElementById('amt-trading').innerText = formatCurrency(trading);
+            document.getElementById('amt-exp').innerText = formatCurrency(exp);
+            updateGlobalScore();
+        }
+
+        // --- Tab 2 Logic: Kill Switches ---
+        function updateKillSwitches() {
+            const vol = parseInt(document.getElementById('vol-slider').value);
+            const api = parseInt(document.getElementById('api-slider').value);
+            
+            document.getElementById('vol-val').innerText = vol + "%";
+            document.getElementById('api-val').innerText = api + " ms";
+            const msg = document.getElementById('ks-msg');
+            
+            for(let i=1; i<=3; i++) {
+                document.getElementById('ks-'+i).className = 'ks-status';
+                document.getElementById('card-ks-'+i).classList.remove('alert');
+            }
+            globalScore = 100;
+
+            if (vol > 100 || api > 500) {
+                msg.innerText = "CRITICAL LIMITS BREACHED. ALL TRADING HALTED.";
+                msg.style.color = "var(--danger)";
+                if (vol > 100) {
+                    document.getElementById('ks-1').classList.add('tripped');
+                    document.getElementById('card-ks-1').classList.add('alert');
+                }
+                if (api > 500) {
+                    document.getElementById('ks-2').classList.add('tripped');
+                    document.getElementById('card-ks-2').classList.add('alert');
+                }
+                document.getElementById('ks-3').classList.add('tripped');
+                document.getElementById('card-ks-3').classList.add('alert');
+                globalScore = 15;
+            } else if (vol > 60 || api > 200) {
+                msg.innerText = "WARNING: Elevated stress. Quoting dynamically widened.";
+                msg.style.color = "var(--warning)";
+                if(vol > 60) {
+                    document.getElementById('ks-1').style.background = 'var(--warning)';
+                    document.getElementById('ks-1').style.boxShadow = '0 0 10px var(--warning)';
+                }
+                if(api > 200) {
+                    document.getElementById('ks-2').style.background = 'var(--warning)';
+                    document.getElementById('ks-2').style.boxShadow = '0 0 10px var(--warning)';
+                }
+                globalScore = 60;
+            } else {
+                msg.innerText = "System is quoting aggressively.";
+                msg.style.color = "var(--success)";
+            }
+            updateGlobalScore();
+        }
+
+        // --- Tab 3 Logic: Pipeline ---
+        function setPipeline(stage, el) {
+            document.querySelectorAll('.pipe-step').forEach(node => node.classList.remove('active'));
+            el.classList.add('active');
+            
+            const fill = document.getElementById('alloc-fill');
+            const txt = document.getElementById('alloc-text');
+            
+            const allocations = [
+                {h: '0%', val: 0},
+                {h: '0%', val: 0},
+                {h: '5%', val: 1000},
+                {h: '25%', val: 25000},
+                {h: '100%', val: 250000}
+            ];
+            
+            fill.style.height = allocations[stage].h;
+            txt.innerText = allocations[stage].val === 0 ? "$0 (No Capital)" : formatCurrency(allocations[stage].val);
+        }
+
+        // --- Tab 4 Logic: Markout Chart ---
         let mChart;
         function initChart() {
             const ctx = document.getElementById('markoutChart').getContext('2d');
             mChart = new Chart(ctx, {
                 type: 'line',
-                data: { labels: ['0ms', '100ms', '1s', '5s', '60s'], datasets: [{ label: 'Post-Fill Profitability', data: [0, 1, 1.5, 2, 2], borderColor: '#22c55e', borderWidth: 3, fill: true, backgroundColor: 'rgba(34, 197, 94, 0.1)' }] },
-                options: { responsive: true, scales: { y: { min: -15, max: 5 } } }
+                data: {
+                    labels: ['0ms', '100ms', '1s', '5s', '60s'],
+                    datasets: [{
+                        label: 'Post-Fill Profitability (bips)',
+                        data: [0, 1, 1.5, 2, 2],
+                        borderColor: '#22c55e', borderWidth: 3, tension: 0.3, fill: true, backgroundColor: 'rgba(34, 197, 94, 0.1)'
+                    }]
+                },
+                options: { responsive: true, scales: { y: { min: -15, max: 5, grid: { color: '#334155' } }, x: { grid: { color: '#334155' } } }, plugins: { legend: { labels: { color: '#f8fafc' } } } }
             });
         }
         initChart();
-        function updateMarkoutChart() { /* ... Same as previous logic ... */ }
-        function advanceMultiSig() { /* ... Same as previous logic ... */ }
-        function updateGauntlet() { /* ... Same as previous logic ... */ }
 
-        // --- TAB 7: MASTER CONTROL ROOM LOGIC ---
-        
+        function updateMarkoutChart() {
+            const tox = parseInt(document.getElementById('tox-slider').value);
+            document.getElementById('tox-val').innerText = tox + " / 100";
+            const msg = document.getElementById('tox-msg');
+            
+            let data, color, bgColor;
+            if (tox < 40) {
+                data = [0, 1, 1.5, 2, 2];
+                color = '#22c55e'; bgColor = 'rgba(34, 197, 94, 0.1)';
+                msg.innerText = "Flow is benign. Spreads are being captured successfully.";
+                msg.style.color = "var(--success)";
+                globalScore = 100;
+            } else if (tox < 75) {
+                data = [0, -2, -4, -1, 1];
+                color = '#f59e0b'; bgColor = 'rgba(245, 158, 11, 0.1)';
+                msg.innerText = "WARNING: Toxic flow detected. System widening quotes.";
+                msg.style.color = "var(--warning)";
+                globalScore = 70;
+            } else {
+                data = [0, -6, -10, -12, -15];
+                color = '#ef4444'; bgColor = 'rgba(239, 68, 68, 0.1)';
+                msg.innerText = "CRITICAL: Severe adverse selection. Market paused.";
+                msg.style.color = "var(--danger)";
+                globalScore = 30;
+            }
+            
+            mChart.data.datasets[0].data = data;
+            mChart.data.datasets[0].borderColor = color;
+            mChart.data.datasets[0].backgroundColor = bgColor;
+            mChart.update();
+            updateGlobalScore();
+        }
+
+        // --- Tab 5 Logic: Multi-Sig ---
+        let msStep = 1;
+        function advanceMultiSig() {
+            const btn = document.getElementById('ms-btn');
+            const disp = document.getElementById('quorum-display');
+            const msg = document.getElementById('ms-msg');
+
+            if (msStep === 1) {
+                document.getElementById('step-1').classList.replace('active-step', 'completed');
+                document.getElementById('step-2').classList.add('active-step');
+                btn.innerText = "Ping Signers (Signal)";
+                msg.innerText = "Transaction proposed. Awaiting Out-of-Band Auth.";
+                msStep++;
+            } else if (msStep === 2) {
+                document.getElementById('step-2').classList.replace('active-step', 'completed');
+                document.getElementById('step-3').classList.add('active-step');
+                btn.innerText = "Hardware Signer 1 Approve";
+                msg.innerText = "Awaiting hardware signatures (0/3)";
+                msStep++;
+            } else if (msStep === 3) {
+                disp.innerText = "1/3";
+                disp.style.color = "var(--warning)";
+                btn.innerText = "Hardware Signer 2 Approve";
+                msg.innerText = "Awaiting hardware signatures (1/3)";
+                msStep++;
+            } else if (msStep === 4) {
+                disp.innerText = "2/3";
+                document.getElementById('step-3').classList.replace('active-step', 'completed');
+                document.getElementById('step-4').classList.add('active-step');
+                btn.innerText = "Broadcast to Chain";
+                msg.innerText = "Quorum reached. Ready to broadcast with Time-Lock.";
+                msStep++;
+            } else if (msStep === 5) {
+                disp.innerText = "3/3";
+                disp.style.color = "var(--success)";
+                document.getElementById('step-4').classList.replace('active-step', 'completed');
+                document.getElementById('step-5').classList.add('active-step');
+                btn.innerText = "Finalize Segregation";
+                msg.innerText = "Time-lock verified. Funds moving to venue.";
+                msStep++;
+            } else if (msStep === 6) {
+                document.getElementById('step-5').classList.replace('active-step', 'completed');
+                btn.innerText = "Transfer Complete";
+                btn.disabled = true;
+                msg.innerText = "Capital isolated via API keys. Ready for trading bots.";
+                msg.style.color = "var(--success)";
+            }
+        }
+
+        // --- Tab 6 Logic: Gauntlet ---
+        function updateGauntlet() {
+            const lat = parseInt(document.getElementById('g-lat').value);
+            const spr = parseInt(document.getElementById('g-spr').value);
+            const dev = parseFloat(document.getElementById('g-dev').value);
+            
+            document.getElementById('g-lat-val').innerText = lat + " ms";
+            document.getElementById('g-spr-val').innerText = spr + " bps";
+            document.getElementById('g-dev-val').innerText = dev.toFixed(1) + " %";
+            
+            const g0 = document.getElementById('g-0');
+            const g1 = document.getElementById('g-1');
+            const g2 = document.getElementById('g-2');
+            const res = document.getElementById('g-result');
+            
+            [g0, g1, g2].forEach(el => el.classList.remove('failed'));
+            globalScore = 100;
+            let failed = false;
+
+            if (lat > 50) { g0.classList.add('failed'); failed = true; }
+            if (spr <= 0) { g1.classList.add('failed'); failed = true; }
+            if (dev > 2.0) { g2.classList.add('failed'); failed = true; }
+
+            if (failed) {
+                res.innerText = "Tick Rejected (Dropped)";
+                res.style.color = "var(--danger)";
+                globalScore = 40;
+            } else {
+                res.innerText = "Tick Accepted (Update Model)";
+                res.style.color = "var(--success)";
+            }
+            updateGlobalScore();
+        }
+
+        // --- TAB 7 LOGIC: MASTER CONTROL ROOM ---
         let logCounter = 0;
         let heartbeatInterval;
         let currentScenario = 'normal';
@@ -614,7 +829,6 @@
             currentScenario = scen;
             clearInterval(heartbeatInterval);
             
-            // UI Button states
             document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('btn-scen-' + scen).classList.add('active');
 
@@ -669,7 +883,7 @@
                 }, 2000);
 
             } else if (scen === 'flash') {
-                pnl -= 1500; // instant hit
+                pnl -= 1500; 
                 updateKpis('HALTED', 0, pnl, 'CRITICAL', 'var(--danger)');
                 setMeter('mc-tox-bar', 100, 'var(--danger)'); document.getElementById('mc-tox-val').innerText = 'Extreme';
                 setMeter('mc-inv-bar', 100, 'var(--danger)'); document.getElementById('mc-inv-val').innerText = 'Limit Breached';
@@ -681,13 +895,11 @@
                 addLog('ACTION: Cancelling all resting orders across all venues.', 'act');
                 addLog('ACTION: $250k Trading Capital automatically withdrawn to Working Capital Reserve.', 'act');
                 addLog('SYSTEM HALTED: Awaiting manual Board / Founder review.', 'crit');
-                // No heartbeat in halt state
             }
         }
 
         // Init Tab 7 on load
         setTimeout(() => triggerScenario('normal'), 500);
-
     </script>
 </body>
 </html>
