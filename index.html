@@ -3,271 +3,166 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Risk Management & Capital Preservation Dashboard</title>
+    <title>Institutional Risk Management & Capital Preservation Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Modern Fintech Color Palette */
         :root {
-            --bg-color: #0f172a;
-            --panel-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #38bdf8;
-            --accent-hover: #0284c7;
-            --danger: #ef4444;
-            --success: #22c55e;
-            --warning: #f59e0b;
+            --bg-base: #0B0E14;
+            --bg-surface: #151A22;
+            --bg-card: #1C232F;
+            --border-light: #2A3241;
+            --text-primary: #F8FAFC;
+            --text-secondary: #94A3B8;
+            --accent-blue: #3B82F6;
+            --accent-blue-light: #60A5FA;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+            --danger: #EF4444;
+            --danger-glow: rgba(239, 68, 68, 0.25);
+            --success: #10B981;
+            --success-glow: rgba(16, 185, 129, 0.25);
+            --warning: #F59E0B;
+            --warning-glow: rgba(245, 158, 11, 0.25);
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            font-family: var(--font-main);
+            background-color: var(--bg-base);
+            color: var(--text-primary);
             margin: 0;
-            padding: 20px;
-            line-height: 1.6;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding: 20px;
-            background: var(--panel-bg);
-            border-radius: 8px;
-            border-left: 4px solid var(--accent);
-        }
-
-        .confidence-meter {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            font-size: 1.2rem;
-            font-weight: bold;
-        }
-
-        .score-display {
-            font-size: 2rem;
-            color: var(--success);
-            transition: color 0.3s;
-        }
-
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .tab-btn {
-            background-color: var(--panel-bg);
-            color: var(--text-muted);
-            border: none;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
-
-        .tab-btn:hover {
-            color: var(--text-main);
-            background-color: #334155;
-        }
-
-        .tab-btn.active {
-            background-color: var(--accent);
-            color: #fff;
-        }
-
-        .tab-content {
-            display: none;
-            background: var(--panel-bg);
             padding: 30px;
-            border-radius: 8px;
-            animation: fadeIn 0.3s;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .tab-content.active {
-            display: block;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        h2 { color: var(--accent); margin-top: 0; }
-        h3 { color: #e2e8f0; border-bottom: 1px solid #334155; padding-bottom: 5px; margin-top: 0;}
-        p { color: var(--text-muted); margin-bottom: 15px; }
-
-        /* Shared UI Elements */
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
-        @media(max-width: 800px) { .grid-2 { grid-template-columns: 1fr; } }
+        /* Typography */
+        h1, h2, h3 { margin-top: 0; font-weight: 600; letter-spacing: -0.02em; }
+        h1 { font-size: 1.5rem; margin-bottom: 5px; }
+        h2 { color: var(--accent-blue); font-size: 1.25rem; border-bottom: 1px solid var(--border-light); padding-bottom: 10px; margin-bottom: 20px;}
+        h3 { color: var(--text-primary); font-size: 1.05rem; margin-bottom: 15px;}
+        p { color: var(--text-secondary); font-size: 0.95rem; }
         
-        .control-panel {
-            background: #0f172a;
-            padding: 20px;
-            border-radius: 8px;
-            border: 1px solid #334155;
-        }
-
-        .slider-group { margin-bottom: 20px; }
-        .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;}
-        .slider-header label { font-weight: bold; margin: 0; }
-        .val-badge { 
-            background: #334155; padding: 2px 10px; 
-            border-radius: 12px; font-size: 0.9rem; 
-            font-family: monospace; color: var(--accent);
-            font-weight: bold;
-        }
-        input[type=range] { width: 100%; cursor: pointer; }
-
-        /* Tab 1: Capital Stack */
-        .stack-bar {
-            display: flex;
-            height: 60px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 30px 0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-        }
-        .stack-segment {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            color: #fff;
-            transition: all 0.4s ease;
-            text-align: center;
-            font-size: 0.85rem;
-            white-space: nowrap;
-            overflow: hidden;
-        }
-
-        /* Tab 2: Kill Switches */
-        .ks-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 15px;
-        }
-        .ks-card {
+        .header-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #0f172a;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid #334155;
-            transition: border-color 0.3s;
-        }
-        .ks-card.alert { border-color: var(--danger); background: rgba(239, 68, 68, 0.05); }
-        .ks-status {
-            width: 15px; height: 15px;
-            border-radius: 50%;
-            background: var(--success);
-            box-shadow: 0 0 10px var(--success);
-        }
-        .ks-status.tripped {
-            background: var(--danger);
-            box-shadow: 0 0 10px var(--danger);
-            animation: pulse 1s infinite;
+            margin-bottom: 30px;
+            padding: 25px;
+            background: var(--bg-surface);
+            border-radius: 12px;
+            border: 1px solid var(--border-light);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.3); }
-            100% { transform: scale(1); }
-        }
+        .confidence-meter { display: flex; flex-direction: column; align-items: flex-end; }
+        .confidence-label { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .score-display { font-size: 2.5rem; font-weight: 700; color: var(--success); font-variant-numeric: tabular-nums; line-height: 1; text-shadow: 0 0 15px var(--success-glow);}
 
-        /* Tab 3: Pipeline */
-        .pipeline-steps { display: flex; flex-direction: column; gap: 10px; }
-        .pipe-step {
-            padding: 15px; background: #0f172a;
-            border: 1px solid #334155; border-radius: 6px;
-            cursor: pointer; transition: all 0.2s;
+        /* Tab Navigation */
+        .tabs {
+            display: flex; gap: 8px; margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 10px; overflow-x: auto;
         }
-        .pipe-step:hover { border-color: var(--accent); }
-        .pipe-step.active { border-color: var(--accent); background: #164e63; }
+        .tab-btn {
+            background: transparent; color: var(--text-secondary); border: none;
+            padding: 10px 16px; cursor: pointer; border-radius: 6px;
+            font-size: 0.9rem; font-weight: 500; transition: all 0.2s ease; white-space: nowrap;
+        }
+        .tab-btn:hover { color: var(--text-primary); background: var(--bg-card); }
+        .tab-btn.active { background: var(--accent-glow); color: var(--accent-blue); box-shadow: inset 0 0 0 1px var(--accent-blue); }
+
+        /* Layout & Cards */
+        .tab-content { display: none; animation: fadeIn 0.4s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; }
+        @media(max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
         
-        /* Tab 5: Multi-Sig */
-        .flow-container { display: flex; flex-direction: column; gap: 15px; margin-bottom: 20px;}
-        .flow-step {
-            padding: 15px; background: #0f172a; border-radius: 6px;
-            border-left: 4px solid #334155;
-            opacity: 0.5; transition: all 0.3s;
-        }
-        .flow-step.active-step { border-left-color: var(--warning); opacity: 1; }
-        .flow-step.completed { border-left-color: var(--success); opacity: 1; }
-        button.action-btn {
-            background: var(--accent); color: #fff; border: none;
-            padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 1rem;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        button.action-btn:hover { background: var(--accent-hover); }
-        button.action-btn:disabled { background: #334155; cursor: not-allowed; color: #94a3b8; }
+        .card { background: var(--bg-surface); padding: 25px; border-radius: 8px; border: 1px solid var(--border-light); }
 
-        /* Tab 6: Gauntlet */
-        .gauntlet-node {
-            padding: 15px; margin-bottom: 10px; border-radius: 6px;
-            background: var(--success); color: #fff;
-            text-align: center; font-weight: bold; transition: all 0.3s;
+        /* Controls */
+        .slider-group { margin-bottom: 25px; }
+        .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;}
+        .slider-header label { font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); margin: 0; }
+        .val-badge { 
+            background: var(--bg-base); padding: 4px 12px; 
+            border-radius: 20px; font-size: 0.85rem; 
+            font-family: monospace; color: var(--accent-blue);
+            border: 1px solid var(--border-light);
         }
-        .gauntlet-node.failed { background: var(--danger); }
-        .gauntlet-arrow { text-align: center; font-size: 1.5rem; color: #334155; margin: -5px 0; }
+        
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; margin: 10px 0; }
+        input[type=range]:focus { outline: none; }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: var(--border-light); border-radius: 3px; }
+        input[type=range]::-webkit-slider-thumb { height: 18px; width: 18px; border-radius: 50%; background: var(--accent-blue); cursor: pointer; -webkit-appearance: none; margin-top: -6px; box-shadow: 0 0 10px var(--accent-glow); }
 
-        /* Tab 7: Master Control Room */
-        .kpi-row { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .kpi-box {
-            flex: 1; background: #0f172a; border: 1px solid #334155; 
-            border-radius: 8px; padding: 15px; text-align: center; min-width: 150px;
-        }
-        .kpi-title { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: bold;}
-        .kpi-value { font-size: 1.8rem; font-family: monospace; font-weight: bold; margin-top: 5px; color: var(--text-main);}
-        .status-active { color: var(--success); text-shadow: 0 0 10px var(--success); }
-        .status-defensive { color: var(--warning); text-shadow: 0 0 10px var(--warning); }
-        .status-halted { color: var(--danger); text-shadow: 0 0 10px var(--danger); }
+        /* Visualizations */
+        .stack-bar { display: flex; height: 50px; border-radius: 8px; overflow: hidden; margin: 20px 0 30px; border: 1px solid var(--border-light); }
+        .stack-segment { display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 600; color: #fff; transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); font-size: 0.8rem; white-space: nowrap; overflow: hidden; }
 
-        .terminal-log {
-            background: #020617; border: 1px solid #334155; border-radius: 6px;
-            height: 300px; overflow-y: auto; padding: 15px; font-family: monospace;
-            font-size: 0.85rem; line-height: 1.5;
-        }
-        .log-time { color: #64748b; margin-right: 10px; }
-        .log-info { color: #cbd5e1; }
-        .log-warn { color: var(--warning); }
-        .log-crit { color: var(--danger); font-weight: bold; }
-        .log-act { color: var(--accent); }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 8px;}
+        .bg-success { background-color: var(--success); box-shadow: 0 0 8px var(--success-glow);}
+        .bg-danger { background-color: var(--danger); box-shadow: 0 0 8px var(--danger-glow);}
+        .bg-warning { background-color: var(--warning); box-shadow: 0 0 8px var(--warning-glow);}
 
-        .meter-bar-container { background: #334155; border-radius: 4px; height: 12px; overflow: hidden; margin-top: 5px; }
-        .meter-bar { height: 100%; transition: width 0.3s, background 0.3s; }
-        .scenario-btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        .scenario-btn { 
-            background: #1e293b; border: 1px solid #475569; color: #f8fafc; 
-            padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold;
-        }
-        .scenario-btn:hover { background: #334155; }
-        .scenario-btn.active { border-color: var(--accent); background: rgba(56, 189, 248, 0.1); }
+        button.action-btn { background: var(--accent-blue); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 600; transition: all 0.2s; width: 100%; }
+        button.action-btn:hover { background: #2563EB; transform: translateY(-1px); }
+        button.action-btn:disabled { background: var(--border-light); color: var(--text-secondary); cursor: not-allowed; transform: none;}
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #334155; }
-        th { color: var(--accent); }
-        tr:hover { background-color: #0f172a; }
+        /* Tab 7 Specific Master Control Room Styles */
+        .mcr-kpi-row { display: flex; gap: 20px; margin-bottom: 25px; flex-wrap: wrap; }
+        .mcr-kpi-box { flex: 1; background: var(--bg-surface); border: 1px solid var(--border-light); border-radius: 8px; padding: 25px 20px; text-align: center; min-width: 200px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .mcr-kpi-title { font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; margin-bottom: 12px; }
+        .mcr-kpi-val { font-size: 2.2rem; font-weight: 800; font-family: monospace; line-height: 1; }
+        
+        .val-glow-success { color: var(--success); text-shadow: 0 0 15px var(--success-glow); }
+        .val-glow-danger { color: var(--danger); text-shadow: 0 0 15px var(--danger-glow); }
+        .val-glow-warning { color: var(--warning); text-shadow: 0 0 15px var(--warning-glow); }
+        .val-glow-neutral { color: var(--text-primary); text-shadow: none; }
+
+        .mcr-metric-row { margin-bottom: 20px; }
+        .mcr-metric-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
+        .mcr-metric-label { font-size: 1.05rem; font-weight: 700; color: var(--text-primary); letter-spacing: -0.01em;}
+        .mcr-metric-val { font-size: 1.05rem; color: var(--text-primary); }
+        .mcr-metric-track { width: 100%; height: 10px; background: var(--border-light); border-radius: 5px; overflow: hidden; }
+        .mcr-metric-fill { height: 100%; transition: width 0.4s ease, background-color 0.4s ease; border-radius: 5px;}
+
+        .mcr-log-container { background: #080B10; border: 1px solid var(--border-light); border-radius: 6px; padding: 15px; height: 320px; overflow-y: auto; font-family: 'Courier New', Courier, monospace; font-size: 0.85rem; line-height: 1.4; color: var(--text-primary); }
+        .mcr-log-time { color: var(--text-secondary); margin-right: 12px; }
+
+        .mcr-scen-btn { background: transparent; border: 1px solid var(--border-light); color: var(--text-primary); padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s; font-size: 0.9rem;}
+        .mcr-scen-btn:hover { background: var(--bg-card); }
+        .mcr-scen-btn.active { border-color: var(--accent-blue); background: var(--accent-glow); }
+        .mcr-scen-btn-danger { border-color: var(--danger); }
+        .mcr-scen-btn-danger.active { border-color: var(--danger); background: var(--danger-glow); }
+
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid var(--border-light); }
+        th { color: var(--text-secondary); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;}
+        tr:hover { background-color: var(--bg-card); }
+        
+        /* Multi-Sig Overrides */
+        .ms-timeline { border-left: 2px solid var(--border-light); margin-left: 20px; padding-left: 25px; display: flex; flex-direction: column; gap: 20px;}
+        .ms-step { position: relative; opacity: 0.4; transition: all 0.3s; }
+        .ms-step::before { content: ''; position: absolute; left: -32px; top: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--border-light); border: 2px solid var(--bg-surface); transition: all 0.3s; }
+        .ms-step.active { opacity: 1; }
+        .ms-step.active::before { background: var(--accent-blue); box-shadow: 0 0 10px var(--accent-blue); }
+        .ms-step.completed { opacity: 1; }
+        .ms-step.completed::before { background: var(--success); }
     </style>
 </head>
 <body>
 
-    <header>
+    <header class="header-container">
         <div>
             <h1>Risk & Capital Preservation Framework</h1>
-            <p style="margin:0;">Quantitative Modeling & Automated Defense Systems</p>
+            <p style="margin:0; font-size: 0.9rem;">Quantitative Defense Systems & Institutional Governance</p>
         </div>
         <div class="confidence-meter">
-            <span>System Confidence Score:</span>
+            <span class="confidence-label">System Confidence Level</span>
             <span class="score-display" id="global-score">100%</span>
         </div>
     </header>
@@ -275,49 +170,54 @@
     <div class="tabs">
         <button class="tab-btn" onclick="openTab('tab-capital')">1. Capital Stack</button>
         <button class="tab-btn" onclick="openTab('tab-killswitch')">2. Kill-Switches</button>
-        <button class="tab-btn" onclick="openTab('tab-pipeline')">3. Pipeline</button>
-        <button class="tab-btn" onclick="openTab('tab-markout')">4. Markouts</button>
-        <button class="tab-btn" onclick="openTab('tab-multisig')">5. Multi-Sig</button>
-        <button class="tab-btn" onclick="openTab('tab-gauntlet')">6. Data Gauntlet</button>
-        <button class="tab-btn active" style="border: 1px solid var(--accent);" onclick="openTab('tab-master')">7. Master Control Room</button>
+        <button class="tab-btn" onclick="openTab('tab-multisig')">3. Treasury Multi-Sig</button>
+        <button class="tab-btn" onclick="openTab('tab-pipeline')">4. Strategy Pipeline</button>
+        <button class="tab-btn" onclick="openTab('tab-gauntlet')">5. Data Gauntlet</button>
+        <button class="tab-btn" onclick="openTab('tab-markout')">6. Toxic Flow Markouts</button>
+        <button class="tab-btn active" onclick="openTab('tab-master')">7. Live Control Room</button>
     </div>
 
     <div id="tab-capital" class="tab-content">
         <h2>The Capital Stack</h2>
-        <p>Simulation of a <strong>~$875,000</strong> balance sheet structure. Watch how automated risk frameworks physically withdraw the $250k of active trading capital into the working capital reserve during market stress.</p>
+        <p>Simulation of a <strong>~$875,000</strong> balance sheet structure. Watch how the automated risk framework physically withdraws the active trading capital into the working capital reserve during simulated market stress.</p>
+        
         <div class="stack-bar">
-            <div id="bar-reserve" class="stack-segment" style="width: 57%; background: #475569;">
-                <span>Working Cap / Reserve</span><span id="amt-reserve">$500,000</span>
+            <div id="bar-reserve" class="stack-segment" style="width: 57%; background: #334155;">
+                <span style="color: #cbd5e1; font-size: 0.75rem;">Reserve</span><span id="amt-reserve">$500,000</span>
             </div>
-            <div id="bar-locked" class="stack-segment" style="width: 12%; background: #64748b;">
-                <span>Locked Vault</span><span id="amt-locked">$100,000</span>
+            <div id="bar-locked" class="stack-segment" style="width: 12%; background: #1E293B;">
+                <span style="color: #94a3b8; font-size: 0.75rem;">Locked Vault</span><span id="amt-locked">$100,000</span>
             </div>
-            <div id="bar-trading" class="stack-segment" style="width: 28%; background: var(--accent);">
-                <span>Active Trading</span><span id="amt-trading">$250,000</span>
+            <div id="bar-trading" class="stack-segment" style="width: 28%; background: var(--accent-blue);">
+                <span style="color: #bfdbfe; font-size: 0.75rem;">Active Trading</span><span id="amt-trading">$250,000</span>
             </div>
             <div id="bar-exp" class="stack-segment" style="width: 3%; background: var(--warning);">
-                <span>Exp.</span><span id="amt-exp">$25,000</span>
+                <span style="color: #fef3c7; font-size: 0.75rem;">Exp.</span><span id="amt-exp">$25,000</span>
             </div>
         </div>
+
         <div class="grid-2">
-            <div>
-                <h3>Capital Buckets</h3>
-                <ul>
-                    <li><strong>Working Cap / Reserve:</strong> ~$500k held back for operating runway.</li>
-                    <li><strong>Locked/Protected:</strong> $100k held in multi-sig cold storage.</li>
-                    <li><strong>Trading Capital:</strong> $250k deployed strictly into approved strategies.</li>
-                    <li><strong>Experimental:</strong> $25k isolated micro-allocations for testing.</li>
+            <div class="card">
+                <h3 style="border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">Capital Buckets</h3>
+                <ul style="padding-left: 20px; color: var(--text-secondary); font-size: 0.95rem;">
+                    <li style="margin-bottom: 10px;"><strong style="color: var(--text-primary);">Working Cap / Reserve:</strong> ~$500k held back for operating runway and manual reallocation.</li>
+                    <li style="margin-bottom: 10px;"><strong style="color: var(--text-primary);">Locked/Protected:</strong> $100k held in multi-sig cold storage.</li>
+                    <li style="margin-bottom: 10px;"><strong style="color: var(--accent-blue);">Trading Capital:</strong> $250k deployed strictly into approved strategies via API.</li>
+                    <li><strong style="color: var(--text-primary);">Experimental:</strong> $25k isolated micro-allocations.</li>
                 </ul>
             </div>
-            <div class="control-panel">
-                <h3>Stress Test Simulator</h3>
-                <div class="slider-group">
+            <div class="card">
+                <h3 style="border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">Stress Test Simulator</h3>
+                <div class="slider-group" style="margin-top: 20px;">
                     <div class="slider-header">
                         <label>Simulated Market Drawdown</label>
                         <span class="val-badge" id="drawdown-val-badge">0.0%</span>
                     </div>
                     <input type="range" id="drawdown-slider" min="0" max="25" step="0.5" value="0" oninput="updateCapitalStack()">
-                    <p style="font-size: 0.9rem; margin-top: 15px; color: var(--success);" id="drawdown-msg">Market Status: Normal. $250k trading capital fully deployed to capture edge.</p>
+                    <div style="margin-top: 20px; padding: 15px; background: var(--bg-base); border-radius: 8px; border: 1px solid var(--border-light);">
+                        <span class="status-dot bg-success" id="drawdown-dot"></span>
+                        <span style="font-size: 0.9rem;" id="drawdown-msg">Market Normal. $250k trading capital deployed to capture edge.</span>
+                    </div>
                 </div>
             </div>
         </div>
@@ -325,193 +225,281 @@
 
     <div id="tab-killswitch" class="tab-content">
         <h2>Automated Kill-Switches</h2>
+        <p>When quantitative thresholds are breached, these predefined triggers instantly halt or restrict trading activity without waiting for human approval.</p>
+        
         <div class="grid-2">
-            <div class="ks-grid">
-                <div class="ks-card" id="card-ks-1">
-                    <div><strong>Market Volatility Spike</strong><br><small>Triggers when annualized volatility > 100%</small></div>
-                    <div class="ks-status" id="ks-1"></div>
-                </div>
-                <div class="ks-card" id="card-ks-2">
-                    <div><strong>Exchange API Instability</strong><br><small>Triggers when API latency > 500ms</small></div>
-                    <div class="ks-status" id="ks-2"></div>
-                </div>
-                <div class="ks-card" id="card-ks-3">
-                    <div><strong>Inventory / Loss Limit Breached</strong><br><small>Triggers on severe toxic flow or limit breaches</small></div>
-                    <div class="ks-status" id="ks-3"></div>
+            <div class="card" style="padding: 15px;">
+                <div style="display: grid; grid-template-columns: 1fr; gap: 15px;">
+                    <div id="card-ks-1" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 15px 20px; border-radius: 8px; border: 1px solid var(--border-light);">
+                        <div><strong style="color: var(--text-primary);">Market Volatility Spike</strong><br><span style="color: var(--text-secondary); font-size: 0.85rem;">Triggers when annualized volatility > 100%</span></div>
+                        <span class="status-dot bg-success" id="ks-1"></span>
+                    </div>
+                    <div id="card-ks-2" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 15px 20px; border-radius: 8px; border: 1px solid var(--border-light);">
+                        <div><strong style="color: var(--text-primary);">Exchange API Instability</strong><br><span style="color: var(--text-secondary); font-size: 0.85rem;">Triggers when API latency > 500ms</span></div>
+                        <span class="status-dot bg-success" id="ks-2"></span>
+                    </div>
+                    <div id="card-ks-3" style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-card); padding: 15px 20px; border-radius: 8px; border: 1px solid var(--border-light);">
+                        <div><strong style="color: var(--text-primary);">Inventory / Loss Limit</strong><br><span style="color: var(--text-secondary); font-size: 0.85rem;">Triggers on severe toxic flow or limit breaches</span></div>
+                        <span class="status-dot bg-success" id="ks-3"></span>
+                    </div>
                 </div>
             </div>
-            <div class="control-panel">
-                <h3>Live Market Telemetry</h3>
-                <div class="slider-group">
+            
+            <div class="card">
+                <h3 style="border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">Live Market Telemetry</h3>
+                <div class="slider-group" style="margin-top: 20px;">
                     <div class="slider-header"><label>Annualized Asset Volatility</label><span class="val-badge" id="vol-val">45%</span></div>
                     <input type="range" id="vol-slider" min="10" max="200" value="45" oninput="updateKillSwitches()">
                 </div>
                 <div class="slider-group">
-                    <div class="slider-header"><label>Venue API Latency</label><span class="val-badge" id="api-val">80 ms</span></div>
+                    <div class="slider-header"><label>Venue API Roundtrip Latency</label><span class="val-badge" id="api-val">80 ms</span></div>
                     <input type="range" id="api-slider" min="10" max="1500" value="80" step="10" oninput="updateKillSwitches()">
                 </div>
-                <p id="ks-msg" style="font-weight: bold; margin-top: 20px; color: var(--success);">System is quoting aggressively.</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="tab-pipeline" class="tab-content">
-        <h2>The Deployment Pipeline</h2>
-        <div class="grid-2">
-            <div class="pipeline-steps">
-                <div class="pipe-step active" onclick="setPipeline(0, this)"><strong>1. Research & Simulation</strong><br>Backtesting and paper trading.</div>
-                <div class="pipe-step" onclick="setPipeline(1, this)"><strong>2. Shadow Mode</strong><br>Observes live markets, generates signals, no capital.</div>
-                <div class="pipe-step" onclick="setPipeline(2, this)"><strong>3. Micro-Live</strong><br>Penny-testing in real markets.</div>
-                <div class="pipe-step" onclick="setPipeline(3, this)"><strong>4. Limited Deployment</strong><br>Trading operates within restrictive caps ($25k).</div>
-                <div class="pipe-step" onclick="setPipeline(4, this)"><strong>5. Scaled Deployment</strong><br>Capital scales up to full $250k allocation.</div>
-            </div>
-            <div class="control-panel" style="display:flex; flex-direction:column; justify-content:center; align-items:center;">
-                <h3>Live Capital Allocated</h3>
-                <div id="alloc-visual" style="width: 100%; height: 200px; background: #0f172a; border-left: 4px solid var(--accent); position: relative;">
-                    <div id="alloc-fill" style="position: absolute; bottom: 0; width: 100%; background: var(--accent); height: 0%; transition: height 0.5s;"></div>
-                </div>
-                <h2 id="alloc-text" style="margin-top: 20px; font-family: monospace; font-size: 2.5rem;">$0.00</h2>
-            </div>
-        </div>
-    </div>
-
-    <div id="tab-markout" class="tab-content">
-        <h2>Markout Actions & Toxic Flow</h2>
-        <div class="grid-2">
-            <div>
-                <canvas id="markoutChart" width="400" height="250"></canvas>
-            </div>
-            <div class="control-panel">
-                <h3>Flow Toxicity Simulator</h3>
-                <div class="slider-group">
-                    <div class="slider-header"><label>Toxicity Index</label><span class="val-badge" id="tox-val">15 / 100</span></div>
-                    <input type="range" id="tox-slider" min="0" max="100" value="15" oninput="updateMarkoutChart()">
-                    <p id="tox-msg" style="margin-top: 15px; color: var(--success); font-weight: bold;">Flow is benign. Spreads captured.</p>
+                <div style="margin-top: 20px; padding: 15px; background: var(--bg-base); border-radius: 8px; border: 1px solid var(--border-light);">
+                    <span style="font-weight: bold; color: var(--success);" id="ks-msg">System is quoting aggressively.</span>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="tab-multisig" class="tab-content">
-        <h2>Treasury Multi-Sig Workflow</h2>
+        <h2>Treasury Multi-Sig Governance</h2>
+        <p>Moving assets from the locked treasury to live exchange API accounts requires physical separation of human governance from automated systems.</p>
+        
         <div class="grid-2">
-            <div class="flow-container">
-                <div class="flow-step active-step" id="step-1"><strong>1. Initiation</strong><br><small>Whitelist verification.</small></div>
-                <div class="flow-step" id="step-2"><strong>2. Out-of-Band Auth</strong><br><small>Signal messaging.</small></div>
-                <div class="flow-step" id="step-3"><strong>3. Quorum Execution</strong><br><small>Hardware wallets.</small></div>
-                <div class="flow-step" id="step-4"><strong>4. Broadcast</strong><br><small>Time-lock activation.</small></div>
-                <div class="flow-step" id="step-5"><strong>5. Venue Segregation</strong><br><small>API keys with NO withdrawal.</small></div>
+            <div class="card">
+                <h3 style="border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">Approval Workflow</h3>
+                <div class="ms-timeline" style="margin-top: 20px;">
+                    <div class="ms-step active" id="ms-1">
+                        <strong style="color: var(--text-primary);">1. Proposal & Whitelist Check</strong>
+                        <p style="margin: 5px 0 0; font-size: 0.85rem;">Destination must match hardcoded exchange deposit whitelist. Unsigned.</p>
+                    </div>
+                    <div class="ms-step" id="ms-2">
+                        <strong style="color: var(--text-primary);">2. Out-of-Band Auth</strong>
+                        <p style="margin: 5px 0 0; font-size: 0.85rem;">Signers notified via secure channel (Signal).</p>
+                    </div>
+                    <div class="ms-step" id="ms-3">
+                        <strong style="color: var(--text-primary);">3. Hardware Quorum (2-of-3)</strong>
+                        <p style="margin: 5px 0 0; font-size: 0.85rem;">Signers physically connect hardware wallets to sign.</p>
+                    </div>
+                    <div class="ms-step" id="ms-4">
+                        <strong style="color: var(--text-primary);">4. On-Chain Time-Lock</strong>
+                        <p style="margin: 5px 0 0; font-size: 0.85rem;">Funds locked in smart contract for 24h before moving.</p>
+                        <div id="timelock-display" style="display: none; font-family: monospace; font-size: 1.2rem; color: var(--warning); border: 1px solid var(--border-light); padding: 2px 8px; border-radius: 4px; margin-top: 5px;">23:59:59</div>
+                    </div>
+                    <div class="ms-step" id="ms-5">
+                        <strong style="color: var(--text-primary);">5. Venue Segregation</strong>
+                        <p style="margin: 5px 0 0; font-size: 0.85rem;">Trading bots access via API keys with NO withdrawal permissions.</p>
+                    </div>
+                </div>
             </div>
-            <div class="control-panel" style="text-align: center; display:flex; flex-direction:column; justify-content:center;">
-                <h1 id="quorum-display" style="color: var(--text-muted); font-size: 4rem; margin: 10px 0; font-family: monospace;">0/3</h1>
-                <p>Signatures Gathered</p>
-                <button class="action-btn" id="ms-btn" onclick="advanceMultiSig()">Initiate Transfer</button>
-                <p id="ms-msg" style="margin-top:20px; font-weight:bold; color: var(--text-muted);">Awaiting initiation...</p>
+            
+            <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    <h3 style="border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">Hardware Key Quorum</h3>
+                    <div style="display: flex; justify-content: center; gap: 15px; margin: 30px 0;">
+                        <div style="background: var(--bg-card); border: 2px solid var(--border-light); border-radius: 8px; padding: 15px; text-align: center; width: 80px;" id="key-1">
+                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-secondary);">Signer 1</span>
+                        </div>
+                        <div style="background: var(--bg-card); border: 2px solid var(--border-light); border-radius: 8px; padding: 15px; text-align: center; width: 80px;" id="key-2">
+                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-secondary);">Signer 2</span>
+                        </div>
+                        <div style="background: var(--bg-card); border: 2px solid var(--border-light); border-radius: 8px; padding: 15px; text-align: center; width: 80px; opacity: 0.5;" id="key-3">
+                            <span style="font-size: 0.75rem; font-weight: bold; color: var(--text-secondary);">Signer 3</span>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin: 20px 0;">
+                        <span style="font-size: 3rem; font-weight: bold; font-family: monospace; color: var(--text-primary);" id="quorum-ratio">0/2</span>
+                        <span style="color: var(--text-secondary); display: block; font-size: 0.85rem; text-transform: uppercase;">Required Signatures</span>
+                    </div>
+                </div>
+                
+                <div>
+                    <div style="background: var(--bg-base); padding: 15px; border-radius: 8px; border: 1px solid var(--border-light); margin-bottom: 20px; font-size: 0.85rem; text-align: center; color: var(--text-secondary);" id="ms-msg">
+                        Awaiting initiation...
+                    </div>
+                    <button class="action-btn" id="ms-btn" onclick="advanceMultiSig()">Initiate Transfer Proposal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-pipeline" class="tab-content">
+        <h2>Strategy Deployment Pipeline</h2>
+        <p>No model goes from backtest to full capital deployment. Strategies must survive this physical gauntlet to prove their edge.</p>
+        <div class="grid-2">
+            <div class="card" style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="card ms-step active" style="padding: 15px; cursor: pointer; background: var(--bg-card);" onclick="setPipeline(0, this)">
+                    <strong style="color: var(--text-primary);">1. Simulation</strong> <span style="color: var(--text-secondary); font-size: 0.85rem;">— Backtest / Paper</span>
+                </div>
+                <div class="card ms-step" style="padding: 15px; cursor: pointer;" onclick="setPipeline(1, this)">
+                    <strong style="color: var(--text-primary);">2. Shadow Mode</strong> <span style="color: var(--text-secondary); font-size: 0.85rem;">— Live Data, No Cash</span>
+                </div>
+                <div class="card ms-step" style="padding: 15px; cursor: pointer;" onclick="setPipeline(2, this)">
+                    <strong style="color: var(--accent-blue);">3. Micro-Live</strong> <span style="color: var(--text-secondary); font-size: 0.85rem;">— Penny Testing</span>
+                </div>
+                <div class="card ms-step" style="padding: 15px; cursor: pointer;" onclick="setPipeline(3, this)">
+                    <strong style="color: var(--warning);">4. Limited Deployment</strong> <span style="color: var(--text-secondary); font-size: 0.85rem;">— $25k Restrictive Cap</span>
+                </div>
+                <div class="card ms-step" style="padding: 15px; cursor: pointer;" onclick="setPipeline(4, this)">
+                    <strong style="color: var(--success);">5. Scaled Deployment</strong> <span style="color: var(--text-secondary); font-size: 0.85rem;">— Full $250k Allocation</span>
+                </div>
+            </div>
+            <div class="card" style="display:flex; flex-direction:column; justify-content:center; align-items:center;">
+                <h3 style="border-bottom: 1px solid var(--border-light); padding-bottom: 10px; width: 100%; text-align: center;">Capital at Risk Limits</h3>
+                <div style="width: 80%; height: 200px; background: var(--bg-base); border-radius: 4px; position: relative; border-bottom: 2px solid var(--border-light); margin-top: 20px;">
+                    <div id="alloc-fill" style="position: absolute; bottom: 0; width: 100%; background: var(--accent-blue); height: 0%; transition: height 0.5s ease; border-radius: 4px 4px 0 0;"></div>
+                </div>
+                <h2 id="alloc-text" style="margin-top: 25px; font-family: monospace; font-size: 2.5rem; color: var(--text-primary);">$0</h2>
             </div>
         </div>
     </div>
 
     <div id="tab-gauntlet" class="tab-content">
-        <h2>The Validation Gauntlet</h2>
+        <h2>The Market Data Gauntlet</h2>
+        <p>Every tick must pass four concentric layers of validation before the matching engine acts on it. A single failure drops the tick instantly.</p>
+        
         <div class="grid-2">
-            <div>
-                <div class="gauntlet-node" id="g-0">Layer 0: Staleness < 50ms</div>
-                <div class="gauntlet-arrow">⬇</div>
-                <div class="gauntlet-node" id="g-1">Layer 1: Internal Book (Spread > 0)</div>
-                <div class="gauntlet-arrow">⬇</div>
-                <div class="gauntlet-node" id="g-2">Layer 2: Oracle Consensus (Deviation < 2%)</div>
-                <div class="gauntlet-arrow">⬇</div>
-                <div class="gauntlet-node" id="g-3">Layer 3: Velocity & Volatility Checks</div>
-                <div style="text-align: center; margin-top: 15px;"><strong id="g-result" style="color: var(--success); font-size: 1.2rem;">Tick Accepted</strong></div>
+            <div class="card" style="display: flex; flex-direction: column; gap: 8px;">
+                <div class="card" style="background: var(--success); color: #fff; text-align: center; font-weight: bold; padding: 12px; border: none;" id="g-0">Layer 0: Latency < 50ms</div>
+                <div style="text-align: center; color: var(--border-light);">⬇</div>
+                <div class="card" style="background: var(--success); color: #fff; text-align: center; font-weight: bold; padding: 12px; border: none;" id="g-1">Layer 1: Local Book Integrity</div>
+                <div style="text-align: center; color: var(--border-light);">⬇</div>
+                <div class="card" style="background: var(--success); color: #fff; text-align: center; font-weight: bold; padding: 12px; border: none;" id="g-2">Layer 2: External Oracle Consensus</div>
+                
+                <div style="text-align: center; margin-top: 20px; padding: 15px; border: 1px dashed var(--border-light); border-radius: 8px;">
+                    <strong id="g-result" style="color: var(--success); font-size: 1.1rem;">Tick Accepted (Model Updated)</strong>
+                </div>
             </div>
-            <div class="control-panel">
-                <h3>Tick Physics Injector</h3>
-                <div class="slider-group">
-                    <div class="slider-header"><label>Latency Delta</label><span class="val-badge" id="g-lat-val">10 ms</span></div>
+            
+            <div class="card">
+                <h3 style="border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">Tick Physics Injector</h3>
+                <div class="slider-group" style="margin-top: 20px;">
+                    <div class="slider-header"><label>Packet Latency Delta</label><span class="val-badge" id="g-lat-val">10 ms</span></div>
                     <input type="range" id="g-lat" min="1" max="150" value="10" oninput="updateGauntlet()">
                 </div>
                 <div class="slider-group">
-                    <div class="slider-header"><label>Local Spread</label><span class="val-badge" id="g-spr-val">5 bps</span></div>
+                    <div class="slider-header"><label>Local Venue Bid/Ask Spread</label><span class="val-badge" id="g-spr-val">5 bps</span></div>
                     <input type="range" id="g-spr" min="-5" max="25" value="5" oninput="updateGauntlet()">
                 </div>
                 <div class="slider-group">
-                    <div class="slider-header"><label>Oracle Deviation</label><span class="val-badge" id="g-dev-val">0.1 %</span></div>
+                    <div class="slider-header"><label>Deviation from External Oracle</label><span class="val-badge" id="g-dev-val">0.1 %</span></div>
                     <input type="range" id="g-dev" min="0.0" max="5.0" step="0.1" value="0.1" oninput="updateGauntlet()">
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="tab-master" class="tab-content active">
-        <h2>Master Control Room: Live Orchestration</h2>
-        <p>Watch how the individual layers (Data, Toxicity, Inventory) communicate in real-time to protect the $250k trading allocation. Select a market scenario below.</p>
+    <div id="tab-markout" class="tab-content">
+        <h2>Post-Fill Markouts & Toxic Flow</h2>
+        <p>The system mathematically measures price deviation immediately after a fill. If the market consistently moves against us milliseconds after trading, the flow is deemed toxic.</p>
+        <div class="grid-2">
+            <div class="card">
+                <canvas id="markoutChart" width="400" height="250"></canvas>
+            </div>
+            <div class="card">
+                <h3 style="border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">Flow Toxicity Simulator</h3>
+                <div class="slider-group" style="margin-bottom: 30px; margin-top: 20px;">
+                    <div class="slider-header"><label>Adverse Selection Toxicity Index</label><span class="val-badge" id="tox-val">15 / 100</span></div>
+                    <input type="range" id="tox-slider" min="0" max="100" value="15" oninput="updateMarkoutChart()">
+                    <div style="margin-top: 15px; padding: 15px; background: var(--bg-base); border-radius: 8px; border: 1px solid var(--border-light);">
+                        <span class="status-dot bg-success" id="tox-dot"></span>
+                        <span style="font-size: 0.9rem;" id="tox-msg">Flow is benign. Spreads are captured.</span>
+                    </div>
+                </div>
+                <table>
+                    <thead><tr><th>Condition</th><th>System Response</th></tr></thead>
+                    <tbody>
+                        <tr><td>Negative @ 100ms</td><td>Route flow to faster VPS.</td></tr>
+                        <tr><td>Negative @ 1s – 5s</td><td>Widen quoted spread heavily.</td></tr>
+                        <tr><td>Strategy Bleeding</td><td>Trigger kill-switch. Halt trading.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-        <div class="kpi-row">
-            <div class="kpi-box">
-                <div class="kpi-title">System State</div>
-                <div class="kpi-value status-active" id="mc-sys-state">ACTIVE</div>
+    <div id="tab-master" class="tab-content active">
+        <p style="margin-top: 0; margin-bottom: 20px; color: var(--text-secondary);">Watch how the individual layers (Data, Toxicity, Inventory) communicate in real-time to protect the $250k trading allocation. Select a market scenario below.</p>
+
+        <div class="mcr-kpi-row">
+            <div class="mcr-kpi-box">
+                <div class="mcr-kpi-title">System State</div>
+                <div class="mcr-kpi-val val-glow-success" id="mc-sys-state">ACTIVE</div>
             </div>
-            <div class="kpi-box">
-                <div class="kpi-title">Active Trading Capital</div>
-                <div class="kpi-value" id="mc-active-cap">$250,000</div>
+            <div class="mcr-kpi-box">
+                <div class="mcr-kpi-title">Active Trading Capital</div>
+                <div class="mcr-kpi-val val-glow-neutral" id="mc-active-cap">$250,000</div>
             </div>
-            <div class="kpi-box">
-                <div class="kpi-title">Unrealized P&L (24H)</div>
-                <div class="kpi-value" style="color: var(--success);" id="mc-pnl">+$1,420.50</div>
+            <div class="mcr-kpi-box">
+                <div class="mcr-kpi-title">Unrealized P&L (24H)</div>
+                <div class="mcr-kpi-val val-glow-success" id="mc-pnl">+$1,671.026</div>
             </div>
-            <div class="kpi-box">
-                <div class="kpi-title">Current Risk Level</div>
-                <div class="kpi-value" style="color: var(--success);" id="mc-risk-lvl">LOW</div>
+            <div class="mcr-kpi-box">
+                <div class="mcr-kpi-title">Current Risk Level</div>
+                <div class="mcr-kpi-val val-glow-success" id="mc-risk-lvl">LOW</div>
             </div>
         </div>
 
         <div class="grid-2">
-            <div class="control-panel">
-                <h3 style="margin-top:0;">Live Risk Metrics & Inventory</h3>
-                
-                <div style="margin-bottom: 15px;">
-                    <div class="slider-header"><label>Asset Inventory Bias (Target Delta Neutral)</label><span id="mc-inv-val">Normal</span></div>
-                    <div class="meter-bar-container">
-                        <div class="meter-bar" id="mc-inv-bar" style="width: 50%; background: var(--accent);"></div>
+            <div class="card">
+                <h3 style="border-bottom: 1px solid var(--border-light); padding-bottom: 15px; margin-bottom: 25px;">Live Risk Metrics & Inventory</h3>
+
+                <div class="mcr-metric-row">
+                    <div class="mcr-metric-header">
+                        <span class="mcr-metric-label">Asset Inventory Bias (Target Delta Neutral)</span>
+                        <span class="mcr-metric-val" id="mc-inv-val">Neutral</span>
+                    </div>
+                    <div class="mcr-metric-track">
+                        <div class="mcr-metric-fill" id="mc-inv-bar" style="width: 50%; background: var(--accent-blue-light);"></div>
                     </div>
                 </div>
 
-                <div style="margin-bottom: 15px;">
-                    <div class="slider-header"><label>Flow Toxicity (1s Markout)</label><span id="mc-tox-val">Benign</span></div>
-                    <div class="meter-bar-container">
-                        <div class="meter-bar" id="mc-tox-bar" style="width: 15%; background: var(--success);"></div>
+                <div class="mcr-metric-row">
+                    <div class="mcr-metric-header">
+                        <span class="mcr-metric-label">Flow Toxicity (1s Markout)</span>
+                        <span class="mcr-metric-val" id="mc-tox-val">Benign</span>
+                    </div>
+                    <div class="mcr-metric-track">
+                        <div class="mcr-metric-fill" id="mc-tox-bar" style="width: 15%; background: var(--success);"></div>
                     </div>
                 </div>
 
-                <div style="margin-bottom: 15px;">
-                    <div class="slider-header"><label>API Latency (Data Gauntlet)</label><span id="mc-lat-val">12 ms</span></div>
-                    <div class="meter-bar-container">
-                        <div class="meter-bar" id="mc-lat-bar" style="width: 10%; background: var(--success);"></div>
+                <div class="mcr-metric-row">
+                    <div class="mcr-metric-header">
+                        <span class="mcr-metric-label">API Latency (Data Gauntlet)</span>
+                        <span class="mcr-metric-val" id="mc-lat-val">12 ms</span>
+                    </div>
+                    <div class="mcr-metric-track">
+                        <div class="mcr-metric-fill" id="mc-lat-bar" style="width: 10%; background: var(--success);"></div>
                     </div>
                 </div>
 
-                <div style="margin-bottom: 15px;">
-                    <div class="slider-header"><label>Quoted Spread Width</label><span id="mc-spr-val">Tight (3 bps)</span></div>
-                    <div class="meter-bar-container">
-                        <div class="meter-bar" id="mc-spr-bar" style="width: 10%; background: var(--accent);"></div>
+                <div class="mcr-metric-row" style="margin-bottom: 0;">
+                    <div class="mcr-metric-header">
+                        <span class="mcr-metric-label">Quoted Spread Width</span>
+                        <span class="mcr-metric-val" id="mc-spr-val">Tight (3 bps)</span>
+                    </div>
+                    <div class="mcr-metric-track">
+                        <div class="mcr-metric-fill" id="mc-spr-bar" style="width: 10%; background: var(--accent-blue-light);"></div>
                     </div>
                 </div>
             </div>
 
-            <div class="control-panel">
-                <h3 style="margin-top:0;">Execution & Risk Event Log</h3>
-                <div class="terminal-log" id="mc-log">
+            <div class="card">
+                <h3 style="border-bottom: 1px solid var(--border-light); padding-bottom: 15px; margin-bottom: 20px;">Execution & Risk Event Log</h3>
+                <div class="mcr-log-container" id="mc-log">
                     </div>
             </div>
         </div>
 
-        <div class="control-panel" style="margin-top: 30px;">
-            <h3 style="margin-top:0;">Scenario Injector</h3>
-            <div class="scenario-btn-group">
-                <button class="scenario-btn active" id="btn-scen-normal" onclick="triggerScenario('normal')">Normal Market</button>
-                <button class="scenario-btn" id="btn-scen-toxic" onclick="triggerScenario('toxic')">Inject Toxic Flow</button>
-                <button class="scenario-btn" id="btn-scen-api" onclick="triggerScenario('api')">Degrade API (Latency)</button>
-                <button class="scenario-btn" style="border-color: var(--danger);" id="btn-scen-flash" onclick="triggerScenario('flash')">Simulate Flash Crash</button>
+        <div class="card" style="margin-top: 25px; padding-bottom: 30px;">
+            <h3 style="border-bottom: 1px solid var(--border-light); padding-bottom: 15px; margin-bottom: 25px;">Scenario Injector</h3>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                <button class="mcr-scen-btn active" id="btn-scen-normal" onclick="triggerScenario('normal')">Normal Market</button>
+                <button class="mcr-scen-btn" id="btn-scen-toxic" onclick="triggerScenario('toxic')">Inject Toxic Flow</button>
+                <button class="mcr-scen-btn" id="btn-scen-api" onclick="triggerScenario('api')">Degrade API (Latency)</button>
+                <button class="mcr-scen-btn mcr-scen-btn-danger" id="btn-scen-flash" onclick="triggerScenario('flash')">Simulate Flash Crash</button>
             </div>
         </div>
     </div>
@@ -522,9 +510,9 @@
         function updateGlobalScore() {
             const display = document.getElementById('global-score');
             display.innerText = globalScore + "%";
-            if(globalScore > 80) display.style.color = "var(--success)";
-            else if(globalScore > 50) display.style.color = "var(--warning)";
-            else display.style.color = "var(--danger)";
+            if(globalScore > 80) { display.style.color = "var(--success)"; display.style.textShadow = "0 0 15px var(--success-glow)"; }
+            else if(globalScore > 50) { display.style.color = "var(--warning)"; display.style.textShadow = "0 0 15px var(--warning-glow)"; }
+            else { display.style.color = "var(--danger)"; display.style.textShadow = "0 0 15px var(--danger-glow)"; }
         }
         function formatCurrency(value) { return "$" + value.toLocaleString(); }
         
@@ -535,7 +523,7 @@
             event.currentTarget.classList.add('active');
         }
 
-        // --- Tab 1 Logic: Capital Stack ---
+        // --- Tab 1: Capital Stack ---
         function updateCapitalStack() {
             const drawdown = parseFloat(document.getElementById('drawdown-slider').value);
             document.getElementById('drawdown-val-badge').innerText = drawdown.toFixed(1) + "%";
@@ -543,33 +531,25 @@
             const rBar = document.getElementById('bar-reserve');
             const lBar = document.getElementById('bar-locked');
             const tBar = document.getElementById('bar-trading');
-            const eBar = document.getElementById('bar-exp');
             const msg = document.getElementById('drawdown-msg');
+            const dot = document.getElementById('drawdown-dot');
 
-            let exp = 25000;
-            let locked = 100000;
-            let trading = 250000;
-            let reserve = 500000; 
+            let locked = 100000; let exp = 25000; let trading = 250000; let reserve = 500000; 
 
             if (drawdown < 5) {
                 tBar.style.width = "28%"; rBar.style.width = "57%";
-                msg.innerText = "Market Status: Normal. Full $250k trading capital deployed to capture edge.";
-                msg.style.color = "var(--success)";
-                globalScore = 100;
+                msg.innerText = "Market Normal. $250k trading capital deployed to capture edge.";
+                dot.className = "status-dot bg-success"; globalScore = 100;
             } else if (drawdown < 15) {
-                trading = 100000;
-                reserve = 650000;
+                trading = 100000; reserve = 650000;
                 tBar.style.width = "11%"; rBar.style.width = "74%";
-                msg.innerText = "Market Status: Elevated Stress. Algorithms pulling liquidity and routing funds back to working capital.";
-                msg.style.color = "var(--warning)";
-                globalScore = 65;
+                msg.innerText = "Elevated Stress. Routing funds back to working capital.";
+                dot.className = "status-dot bg-warning"; globalScore = 65;
             } else {
-                trading = 0;
-                reserve = 750000;
+                trading = 0; reserve = 750000;
                 tBar.style.width = "0%"; rBar.style.width = "85%";
-                msg.innerText = "Market Status: Extreme Volatility. Trading halted. Active capital completely withdrawn.";
-                msg.style.color = "var(--danger)";
-                globalScore = 20;
+                msg.innerText = "Extreme Volatility. Trading halted. Capital withdrawn.";
+                dot.className = "status-dot bg-danger"; globalScore = 20;
             }
 
             document.getElementById('amt-reserve').innerText = formatCurrency(reserve);
@@ -579,7 +559,7 @@
             updateGlobalScore();
         }
 
-        // --- Tab 2 Logic: Kill Switches ---
+        // --- Tab 2: Kill Switches ---
         function updateKillSwitches() {
             const vol = parseInt(document.getElementById('vol-slider').value);
             const api = parseInt(document.getElementById('api-slider').value);
@@ -589,166 +569,102 @@
             const msg = document.getElementById('ks-msg');
             
             for(let i=1; i<=3; i++) {
-                document.getElementById('ks-'+i).className = 'ks-status';
+                document.getElementById('ks-'+i).className = 'status-dot bg-success';
                 document.getElementById('card-ks-'+i).classList.remove('alert');
             }
             globalScore = 100;
 
             if (vol > 100 || api > 500) {
-                msg.innerText = "CRITICAL LIMITS BREACHED. ALL TRADING HALTED.";
-                msg.style.color = "var(--danger)";
-                if (vol > 100) {
-                    document.getElementById('ks-1').classList.add('tripped');
-                    document.getElementById('card-ks-1').classList.add('alert');
-                }
-                if (api > 500) {
-                    document.getElementById('ks-2').classList.add('tripped');
-                    document.getElementById('card-ks-2').classList.add('alert');
-                }
-                document.getElementById('ks-3').classList.add('tripped');
-                document.getElementById('card-ks-3').classList.add('alert');
+                msg.innerText = "CRITICAL LIMITS BREACHED. ALL TRADING HALTED."; msg.style.color = "var(--danger)";
+                if (vol > 100) { document.getElementById('ks-1').className = 'status-dot bg-danger'; document.getElementById('card-ks-1').classList.add('alert'); }
+                if (api > 500) { document.getElementById('ks-2').className = 'status-dot bg-danger'; document.getElementById('card-ks-2').classList.add('alert'); }
+                document.getElementById('ks-3').className = 'status-dot bg-danger'; document.getElementById('card-ks-3').classList.add('alert');
                 globalScore = 15;
             } else if (vol > 60 || api > 200) {
-                msg.innerText = "WARNING: Elevated stress. Quoting dynamically widened.";
-                msg.style.color = "var(--warning)";
-                if(vol > 60) {
-                    document.getElementById('ks-1').style.background = 'var(--warning)';
-                    document.getElementById('ks-1').style.boxShadow = '0 0 10px var(--warning)';
-                }
-                if(api > 200) {
-                    document.getElementById('ks-2').style.background = 'var(--warning)';
-                    document.getElementById('ks-2').style.boxShadow = '0 0 10px var(--warning)';
-                }
+                msg.innerText = "WARNING: Elevated stress. Quoting dynamically widened."; msg.style.color = "var(--warning)";
+                if(vol > 60) document.getElementById('ks-1').className = 'status-dot bg-warning';
+                if(api > 200) document.getElementById('ks-2').className = 'status-dot bg-warning';
                 globalScore = 60;
             } else {
-                msg.innerText = "System is quoting aggressively.";
-                msg.style.color = "var(--success)";
+                msg.innerText = "System is quoting aggressively."; msg.style.color = "var(--success)";
             }
             updateGlobalScore();
         }
 
-        // --- Tab 3 Logic: Pipeline ---
+        // --- Tab 3: Multi-Sig ---
+        let msStep = 1; let timelockInterval;
+        function advanceMultiSig() {
+            const btn = document.getElementById('ms-btn');
+            const msg = document.getElementById('ms-msg');
+            const ratio = document.getElementById('quorum-ratio');
+
+            if (msStep === 1) {
+                document.getElementById('ms-1').classList.replace('active', 'completed');
+                document.getElementById('ms-2').classList.add('active');
+                btn.innerText = "Verify via Out-of-Band Signal";
+                msg.innerHTML = "<span style='color: var(--accent-blue)'>Whitelist check passed.</span> Transaction generated. Awaiting human validation.";
+                msStep++;
+            } else if (msStep === 2) {
+                document.getElementById('ms-2').classList.replace('active', 'completed');
+                document.getElementById('ms-3').classList.add('active');
+                btn.innerText = "Plug in Trezor (Signer 1)";
+                msg.innerText = "Signers verified intent on Signal. Awaiting physical hardware signatures.";
+                msStep++;
+            } else if (msStep === 3) {
+                ratio.innerText = "1/2"; ratio.style.color = "var(--warning)";
+                document.getElementById('key-1').style.borderColor = 'var(--success)';
+                btn.innerText = "Plug in Ledger (Signer 2)";
+                msg.innerHTML = "Signer 1 <span style='color: var(--success)'>(Verified)</span>. Awaiting quorum.";
+                msStep++;
+            } else if (msStep === 4) {
+                ratio.innerText = "2/2"; ratio.style.color = "var(--success)";
+                document.getElementById('key-2').style.borderColor = 'var(--success)';
+                document.getElementById('ms-3').classList.replace('active', 'completed');
+                document.getElementById('ms-4').classList.add('active');
+                btn.innerText = "Broadcast to Blockchain";
+                msg.innerHTML = "Quorum reached <span style='color: var(--success)'>(2/2)</span>. Ready to broadcast transaction to smart contract.";
+                msStep++;
+            } else if (msStep === 5) {
+                document.getElementById('timelock-display').style.display = 'inline-block';
+                btn.innerText = "Wait 24 Hours"; btn.disabled = true;
+                msg.innerHTML = "<span style='color: var(--warning)'>Time-Lock active.</span> Funds are frozen to allow emergency veto if duress is detected.";
+                
+                let hrs = 23; let mins = 59; let secs = 59;
+                timelockInterval = setInterval(() => {
+                    secs--; if(secs < 0) { secs = 59; mins--; }
+                    document.getElementById('timelock-display').innerText = `${hrs}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+                }, 50);
+
+                setTimeout(() => {
+                    clearInterval(timelockInterval);
+                    document.getElementById('timelock-display').innerText = "00:00:00";
+                    document.getElementById('timelock-display').style.color = "var(--success)";
+                    btn.disabled = false; btn.innerText = "Finalize Segregation";
+                    msg.innerHTML = "Time-lock expired securely. Ready to drop funds into Exchange.";
+                    msStep++;
+                }, 2000);
+            } else if (msStep === 6) {
+                document.getElementById('ms-4').classList.replace('active', 'completed');
+                document.getElementById('ms-5').classList.add('completed');
+                btn.innerText = "Transfer Complete"; btn.disabled = true;
+                msg.innerHTML = "<strong style='color: var(--success)'>Security Shift:</strong> Funds hit exchange. Bots granted Trade-Only API keys.";
+            }
+        }
+
+        // --- Tab 4: Pipeline ---
         function setPipeline(stage, el) {
-            document.querySelectorAll('.pipe-step').forEach(node => node.classList.remove('active'));
-            el.classList.add('active');
+            document.querySelectorAll('#tab-pipeline .ms-step').forEach(node => node.style.background = 'transparent');
+            el.style.background = 'var(--bg-card)';
             
             const fill = document.getElementById('alloc-fill');
             const txt = document.getElementById('alloc-text');
-            
-            const allocations = [
-                {h: '0%', val: 0},
-                {h: '0%', val: 0},
-                {h: '5%', val: 1000},
-                {h: '25%', val: 25000},
-                {h: '100%', val: 250000}
-            ];
+            const allocations = [ {h: '0%', val: 0}, {h: '0%', val: 0}, {h: '5%', val: 1000}, {h: '25%', val: 25000}, {h: '100%', val: 250000} ];
             
             fill.style.height = allocations[stage].h;
-            txt.innerText = allocations[stage].val === 0 ? "$0 (No Capital)" : formatCurrency(allocations[stage].val);
+            txt.innerText = allocations[stage].val === 0 ? "$0" : formatCurrency(allocations[stage].val);
         }
 
-        // --- Tab 4 Logic: Markout Chart ---
-        let mChart;
-        function initChart() {
-            const ctx = document.getElementById('markoutChart').getContext('2d');
-            mChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: ['0ms', '100ms', '1s', '5s', '60s'],
-                    datasets: [{
-                        label: 'Post-Fill Profitability (bips)',
-                        data: [0, 1, 1.5, 2, 2],
-                        borderColor: '#22c55e', borderWidth: 3, tension: 0.3, fill: true, backgroundColor: 'rgba(34, 197, 94, 0.1)'
-                    }]
-                },
-                options: { responsive: true, scales: { y: { min: -15, max: 5, grid: { color: '#334155' } }, x: { grid: { color: '#334155' } } }, plugins: { legend: { labels: { color: '#f8fafc' } } } }
-            });
-        }
-        initChart();
-
-        function updateMarkoutChart() {
-            const tox = parseInt(document.getElementById('tox-slider').value);
-            document.getElementById('tox-val').innerText = tox + " / 100";
-            const msg = document.getElementById('tox-msg');
-            
-            let data, color, bgColor;
-            if (tox < 40) {
-                data = [0, 1, 1.5, 2, 2];
-                color = '#22c55e'; bgColor = 'rgba(34, 197, 94, 0.1)';
-                msg.innerText = "Flow is benign. Spreads are being captured successfully.";
-                msg.style.color = "var(--success)";
-                globalScore = 100;
-            } else if (tox < 75) {
-                data = [0, -2, -4, -1, 1];
-                color = '#f59e0b'; bgColor = 'rgba(245, 158, 11, 0.1)';
-                msg.innerText = "WARNING: Toxic flow detected. System widening quotes.";
-                msg.style.color = "var(--warning)";
-                globalScore = 70;
-            } else {
-                data = [0, -6, -10, -12, -15];
-                color = '#ef4444'; bgColor = 'rgba(239, 68, 68, 0.1)';
-                msg.innerText = "CRITICAL: Severe adverse selection. Market paused.";
-                msg.style.color = "var(--danger)";
-                globalScore = 30;
-            }
-            
-            mChart.data.datasets[0].data = data;
-            mChart.data.datasets[0].borderColor = color;
-            mChart.data.datasets[0].backgroundColor = bgColor;
-            mChart.update();
-            updateGlobalScore();
-        }
-
-        // --- Tab 5 Logic: Multi-Sig ---
-        let msStep = 1;
-        function advanceMultiSig() {
-            const btn = document.getElementById('ms-btn');
-            const disp = document.getElementById('quorum-display');
-            const msg = document.getElementById('ms-msg');
-
-            if (msStep === 1) {
-                document.getElementById('step-1').classList.replace('active-step', 'completed');
-                document.getElementById('step-2').classList.add('active-step');
-                btn.innerText = "Ping Signers (Signal)";
-                msg.innerText = "Transaction proposed. Awaiting Out-of-Band Auth.";
-                msStep++;
-            } else if (msStep === 2) {
-                document.getElementById('step-2').classList.replace('active-step', 'completed');
-                document.getElementById('step-3').classList.add('active-step');
-                btn.innerText = "Hardware Signer 1 Approve";
-                msg.innerText = "Awaiting hardware signatures (0/3)";
-                msStep++;
-            } else if (msStep === 3) {
-                disp.innerText = "1/3";
-                disp.style.color = "var(--warning)";
-                btn.innerText = "Hardware Signer 2 Approve";
-                msg.innerText = "Awaiting hardware signatures (1/3)";
-                msStep++;
-            } else if (msStep === 4) {
-                disp.innerText = "2/3";
-                document.getElementById('step-3').classList.replace('active-step', 'completed');
-                document.getElementById('step-4').classList.add('active-step');
-                btn.innerText = "Broadcast to Chain";
-                msg.innerText = "Quorum reached. Ready to broadcast with Time-Lock.";
-                msStep++;
-            } else if (msStep === 5) {
-                disp.innerText = "3/3";
-                disp.style.color = "var(--success)";
-                document.getElementById('step-4').classList.replace('active-step', 'completed');
-                document.getElementById('step-5').classList.add('active-step');
-                btn.innerText = "Finalize Segregation";
-                msg.innerText = "Time-lock verified. Funds moving to venue.";
-                msStep++;
-            } else if (msStep === 6) {
-                document.getElementById('step-5').classList.replace('active-step', 'completed');
-                btn.innerText = "Transfer Complete";
-                btn.disabled = true;
-                msg.innerText = "Capital isolated via API keys. Ready for trading bots.";
-                msg.style.color = "var(--success)";
-            }
-        }
-
-        // --- Tab 6 Logic: Gauntlet ---
+        // --- Tab 5: Gauntlet ---
         function updateGauntlet() {
             const lat = parseInt(document.getElementById('g-lat').value);
             const spr = parseInt(document.getElementById('g-spr').value);
@@ -758,147 +674,167 @@
             document.getElementById('g-spr-val').innerText = spr + " bps";
             document.getElementById('g-dev-val').innerText = dev.toFixed(1) + " %";
             
-            const g0 = document.getElementById('g-0');
-            const g1 = document.getElementById('g-1');
-            const g2 = document.getElementById('g-2');
+            const g0 = document.getElementById('g-0'); const g1 = document.getElementById('g-1'); const g2 = document.getElementById('g-2');
             const res = document.getElementById('g-result');
             
-            [g0, g1, g2].forEach(el => el.classList.remove('failed'));
-            globalScore = 100;
-            let failed = false;
+            [g0, g1, g2].forEach(el => { el.style.background = 'var(--success)'; });
+            globalScore = 100; let failed = false;
 
-            if (lat > 50) { g0.classList.add('failed'); failed = true; }
-            if (spr <= 0) { g1.classList.add('failed'); failed = true; }
-            if (dev > 2.0) { g2.classList.add('failed'); failed = true; }
+            if (lat > 50) { g0.style.background = 'var(--danger)'; failed = true; }
+            if (spr <= 0) { g1.style.background = 'var(--danger)'; failed = true; }
+            if (dev > 2.0) { g2.style.background = 'var(--danger)'; failed = true; }
 
             if (failed) {
-                res.innerText = "Tick Rejected (Dropped)";
-                res.style.color = "var(--danger)";
-                globalScore = 40;
+                res.innerText = "Tick Rejected (Dropped)"; res.style.color = "var(--danger)"; globalScore = 40;
             } else {
-                res.innerText = "Tick Accepted (Update Model)";
-                res.style.color = "var(--success)";
+                res.innerText = "Tick Accepted (Model Updated)"; res.style.color = "var(--success)";
             }
             updateGlobalScore();
         }
 
-        // --- TAB 7 LOGIC: MASTER CONTROL ROOM ---
-        let logCounter = 0;
-        let heartbeatInterval;
-        let currentScenario = 'normal';
-        let pnl = 1420.50;
+        // --- Tab 6: Markouts ---
+        let mChart;
+        function initChart() {
+            const ctx = document.getElementById('markoutChart').getContext('2d');
+            Chart.defaults.color = '#94A3B8'; Chart.defaults.font.family = '-apple-system, BlinkMacSystemFont, sans-serif';
+            mChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['0ms', '100ms', '1s', '5s', '60s'],
+                    datasets: [{ label: 'Post-Fill Profitability (bps)', data: [0, 1, 1.5, 2, 2], borderColor: '#10B981', borderWidth: 3, tension: 0.3, fill: true, backgroundColor: 'rgba(16, 185, 129, 0.1)' }]
+                },
+                options: { responsive: true, scales: { y: { min: -15, max: 5, grid: { color: '#2A3241' } }, x: { grid: { color: '#2A3241' } } } }
+            });
+        }
+        initChart();
 
-        function getTimestamp() {
-            const now = new Date();
-            return `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}]`;
+        function updateMarkoutChart() {
+            const tox = parseInt(document.getElementById('tox-slider').value);
+            document.getElementById('tox-val').innerText = tox + " / 100";
+            const msg = document.getElementById('tox-msg'); const dot = document.getElementById('tox-dot');
+            
+            let data, color, bgColor;
+            if (tox < 40) {
+                data = [0, 1, 1.5, 2, 2]; color = '#10B981'; bgColor = 'rgba(16, 185, 129, 0.1)';
+                msg.innerText = "Flow is benign. Spreads are captured."; dot.className = "status-dot bg-success"; globalScore = 100;
+            } else if (tox < 75) {
+                data = [0, -2, -4, -1, 1]; color = '#F59E0B'; bgColor = 'rgba(245, 158, 11, 0.1)';
+                msg.innerText = "Toxic flow detected. System widening quotes."; dot.className = "status-dot bg-warning"; globalScore = 70;
+            } else {
+                data = [0, -6, -10, -12, -15]; color = '#EF4444'; bgColor = 'rgba(239, 68, 68, 0.1)';
+                msg.innerText = "CRITICAL: Severe adverse selection. Market paused."; dot.className = "status-dot bg-danger"; globalScore = 30;
+            }
+            mChart.data.datasets[0].data = data; mChart.data.datasets[0].borderColor = color; mChart.data.datasets[0].backgroundColor = bgColor; mChart.update(); updateGlobalScore();
         }
 
-        function addLog(message, type = 'info') {
-            const logBox = document.getElementById('mc-log');
-            const entry = document.createElement('div');
-            
-            let colorClass = 'log-info';
-            if (type === 'warn') colorClass = 'log-warn';
-            if (type === 'crit') colorClass = 'log-crit';
-            if (type === 'act') colorClass = 'log-act';
+        // --- Tab 7: Master Control Room ---
+        let logInterval; let pnlVal = 1671.026;
+        
+        function formatPnl(val) {
+            return (val >= 0 ? '+$' : '-$') + Math.abs(val).toLocaleString('en-US', {minimumFractionDigits: 3, maximumFractionDigits: 3});
+        }
 
-            entry.innerHTML = `<span class="log-time">${getTimestamp()}</span> <span class="${colorClass}">${message}</span>`;
-            logBox.appendChild(entry);
+        function addLog(msg, type = 'info') {
+            const logBox = document.getElementById('mc-log');
+            const now = new Date();
+            const time = `[${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}]`;
+            
+            let color = 'var(--text-primary)';
+            if(type === 'warn') color = 'var(--warning)';
+            if(type === 'danger') color = 'var(--danger)';
+
+            const div = document.createElement('div');
+            // Remove margin to match the tight monospace stack in the image
+            div.innerHTML = `<span class="mcr-log-time">${time}</span><span style="color: ${color};">${msg}</span>`;
+            logBox.appendChild(div);
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        function setMeter(id, percentage, color) {
-            document.getElementById(id).style.width = percentage + '%';
-            document.getElementById(id).style.background = color;
-        }
-
-        function updateKpis(state, cap, pnlVal, risk, color) {
-            const stateEl = document.getElementById('mc-sys-state');
-            stateEl.innerText = state;
-            stateEl.className = 'kpi-value ' + (state==='ACTIVE'?'status-active':state==='DEFENSIVE'?'status-defensive':'status-halted');
+        function triggerScenario(type) {
+            clearInterval(logInterval);
             
-            document.getElementById('mc-active-cap').innerText = formatCurrency(cap);
-            document.getElementById('mc-pnl').innerText = (pnlVal >= 0 ? '+' : '') + formatCurrency(pnlVal);
-            document.getElementById('mc-pnl').style.color = pnlVal >= 0 ? 'var(--success)' : 'var(--danger)';
-            
-            document.getElementById('mc-risk-lvl').innerText = risk;
-            document.getElementById('mc-risk-lvl').style.color = color;
-        }
+            // UI Button states
+            document.querySelectorAll('.mcr-scen-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-scen-'+type).classList.add('active');
 
-        function triggerScenario(scen) {
-            currentScenario = scen;
-            clearInterval(heartbeatInterval);
+            const state = document.getElementById('mc-sys-state');
+            const cap = document.getElementById('mc-active-cap');
+            const risk = document.getElementById('mc-risk-lvl');
+            const pnlEl = document.getElementById('mc-pnl');
             
-            document.querySelectorAll('.scenario-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('btn-scen-' + scen).classList.add('active');
+            const setMeter = (id, pct, color, textId, text) => {
+                document.getElementById(id).style.width = pct + '%';
+                document.getElementById(id).style.background = color;
+                document.getElementById(textId).innerText = text;
+            };
 
-            if (scen === 'normal') {
-                updateKpis('ACTIVE', 250000, pnl, 'LOW', 'var(--success)');
-                setMeter('mc-inv-bar', 50, 'var(--accent)'); document.getElementById('mc-inv-val').innerText = 'Neutral';
-                setMeter('mc-tox-bar', 15, 'var(--success)'); document.getElementById('mc-tox-val').innerText = 'Benign';
-                setMeter('mc-lat-bar', 10, 'var(--success)'); document.getElementById('mc-lat-val').innerText = '12 ms';
-                setMeter('mc-spr-bar', 10, 'var(--accent)'); document.getElementById('mc-spr-val').innerText = 'Tight (3 bps)';
+            if (type === 'normal') {
+                state.innerText = 'ACTIVE'; state.className = 'mcr-kpi-val val-glow-success';
+                cap.innerText = '$250,000'; cap.className = 'mcr-kpi-val val-glow-neutral';
+                risk.innerText = 'LOW'; risk.className = 'mcr-kpi-val val-glow-success';
+                pnlEl.className = 'mcr-kpi-val val-glow-success';
                 
-                addLog('--- RETURNED TO NORMAL MARKET CONDITIONS ---', 'info');
-                addLog('Risk framework: Data gauntlet checks passing.', 'info');
-                addLog('Action: Resuming aggressive liquidity provision.', 'act');
+                setMeter('mc-inv-bar', 50, 'var(--accent-blue-light)', 'mc-inv-val', 'Neutral');
+                setMeter('mc-tox-bar', 15, 'var(--success)', 'mc-tox-val', 'Benign');
+                setMeter('mc-lat-bar', 10, 'var(--success)', 'mc-lat-val', '12 ms');
+                setMeter('mc-spr-bar', 10, 'var(--accent-blue-light)', 'mc-spr-val', 'Tight (3 bps)');
+
+                logInterval = setInterval(() => {
+                    pnlVal += Math.random() * 0.5; pnlEl.innerText = formatPnl(pnlVal);
+                    if(Math.random()>0.4) addLog('Tick accepted. Midpoint updated.', 'info');
+                    else addLog('Maker fill received. Spread captured.', 'info');
+                }, 1800);
+            } 
+            else if (type === 'api') {
+                state.innerText = 'DEFENSIVE'; state.className = 'mcr-kpi-val val-glow-warning';
+                cap.innerText = '$100,000'; cap.className = 'mcr-kpi-val val-glow-neutral';
+                risk.innerText = 'HIGH'; risk.className = 'mcr-kpi-val val-glow-warning';
                 
-                heartbeatInterval = setInterval(() => {
-                    pnl += (Math.random() * 5);
-                    document.getElementById('mc-pnl').innerText = '+' + formatCurrency(pnl);
-                    if(Math.random() > 0.5) addLog('Tick accepted. Midpoint updated.', 'info');
-                    else addLog('Maker fill received. Spread captured.', 'success');
+                setMeter('mc-lat-bar', 95, 'var(--danger)', 'mc-lat-val', '600 ms (Degraded)');
+                setMeter('mc-spr-bar', 85, 'var(--warning)', 'mc-spr-val', 'Hedge-Only (50 bps)');
+
+                addLog('WARNING: VENUE API LATENCY > 500MS', 'warn');
+                addLog('Data Gauntlet Layer 0: Rejecting stale ticks.', 'warn');
+                addLog('ACTION: Halting aggressive quoting.', 'info');
+                addLog('ACTION: Reducing active capital exposure until API normalizes.', 'info');
+                logInterval = setInterval(() => { addLog('Stale tick dropped. Orderbook frozen.', 'warn'); }, 2000);
+            }
+            else if (type === 'toxic') {
+                state.innerText = 'DEFENSIVE'; state.className = 'mcr-kpi-val val-glow-warning';
+                risk.innerText = 'ELEVATED'; risk.className = 'mcr-kpi-val val-glow-warning';
+                
+                setMeter('mc-tox-bar', 85, 'var(--warning)', 'mc-tox-val', 'High Adverse Selection');
+                setMeter('mc-spr-bar', 60, 'var(--warning)', 'mc-spr-val', 'Widened (15 bps)');
+                setMeter('mc-inv-bar', 75, 'var(--warning)', 'mc-inv-val', 'Long Bias (Warning)');
+
+                addLog('DETECTED TOXIC TAKER FLOW', 'warn');
+                addLog('Markout Analysis: 1s profitability breached -5bps.', 'warn');
+                addLog('ACTION: System widening quotes automatically.', 'info');
+                logInterval = setInterval(() => { 
+                    pnlVal -= Math.random() * 0.5; pnlEl.innerText = formatPnl(pnlVal);
+                    addLog('Taker order rejected due to widened defensive spread.', 'info'); 
                 }, 2000);
+            } 
+            else if (type === 'flash') {
+                pnlVal -= 1500; pnlEl.innerText = formatPnl(pnlVal); pnlEl.className = 'mcr-kpi-val val-glow-danger';
+                state.innerText = 'HALTED'; state.className = 'mcr-kpi-val val-glow-danger';
+                cap.innerText = '$0'; cap.className = 'mcr-kpi-val val-glow-danger';
+                risk.innerText = 'CRITICAL'; risk.className = 'mcr-kpi-val val-glow-danger';
+                
+                setMeter('mc-tox-bar', 100, 'var(--danger)', 'mc-tox-val', 'Extreme');
+                setMeter('mc-inv-bar', 100, 'var(--danger)', 'mc-inv-val', 'Limit Breached');
+                setMeter('mc-spr-bar', 100, 'var(--danger)', 'mc-spr-val', 'Offline');
+                setMeter('mc-lat-bar', 100, 'var(--danger)', 'mc-lat-val', 'Timeout');
 
-            } else if (scen === 'toxic') {
-                updateKpis('DEFENSIVE', 250000, pnl, 'ELEVATED', 'var(--warning)');
-                setMeter('mc-tox-bar', 85, 'var(--warning)'); document.getElementById('mc-tox-val').innerText = 'High Adverse Selection';
-                setMeter('mc-spr-bar', 60, 'var(--warning)'); document.getElementById('mc-spr-val').innerText = 'Widened (15 bps)';
-                setMeter('mc-inv-bar', 75, 'var(--warning)'); document.getElementById('mc-inv-val').innerText = 'Long Bias (Warning)';
-                
-                addLog('--- DETECTED TOXIC TAKER FLOW ---', 'warn');
-                addLog('Markout Action: 1s profitability dropped below -5bps.', 'warn');
-                addLog('Inventory Control: Asset balance skewing beyond neutral limits.', 'warn');
-                addLog('ACTION: System widening quotes automatically.', 'act');
-                addLog('ACTION: Skewing bids lower to discourage toxic selling.', 'act');
-                
-                heartbeatInterval = setInterval(() => {
-                    pnl -= (Math.random() * 2);
-                    document.getElementById('mc-pnl').innerText = '+' + formatCurrency(pnl);
-                    addLog('Defensive mode: Taker order rejected due to widened spread.', 'info');
-                }, 2500);
-
-            } else if (scen === 'api') {
-                updateKpis('DEFENSIVE', 100000, pnl, 'HIGH', 'var(--danger)');
-                setMeter('mc-lat-bar', 95, 'var(--danger)'); document.getElementById('mc-lat-val').innerText = '600 ms (Degraded)';
-                setMeter('mc-spr-bar', 90, 'var(--danger)'); document.getElementById('mc-spr-val').innerText = 'Hedge-Only (50 bps)';
-                
-                addLog('--- VENUE API LATENCY SPIKE ---', 'warn');
-                addLog('Data Gauntlet Layer 0: Timestamp delta > 500ms.', 'crit');
-                addLog('ACTION: Dropping stale ticks. Halting aggressive quoting.', 'act');
-                addLog('ACTION: Reducing active capital limit to $100k until resolved.', 'act');
-                
-                heartbeatInterval = setInterval(() => {
-                    addLog('Data Gauntlet: Tick rejected (Stale data limit).', 'warn');
-                }, 2000);
-
-            } else if (scen === 'flash') {
-                pnl -= 1500; 
-                updateKpis('HALTED', 0, pnl, 'CRITICAL', 'var(--danger)');
-                setMeter('mc-tox-bar', 100, 'var(--danger)'); document.getElementById('mc-tox-val').innerText = 'Extreme';
-                setMeter('mc-inv-bar', 100, 'var(--danger)'); document.getElementById('mc-inv-val').innerText = 'Limit Breached';
-                setMeter('mc-spr-bar', 100, 'var(--danger)'); document.getElementById('mc-spr-val').innerText = 'Offline';
-                
-                addLog('--- FLASH CRASH DETECTED ---', 'crit');
-                addLog('Data Gauntlet Layer 3: Velocity deviation > 5 standard deviations.', 'crit');
-                addLog('Kill-Switch Triggered: Volatility spike / Inventory limits breached.', 'crit');
-                addLog('ACTION: Cancelling all resting orders across all venues.', 'act');
-                addLog('ACTION: $250k Trading Capital automatically withdrawn to Working Capital Reserve.', 'act');
-                addLog('SYSTEM HALTED: Awaiting manual Board / Founder review.', 'crit');
+                addLog('CRITICAL: FLASH CRASH DETECTED. VELOCITY LIMIT BREACHED.', 'danger');
+                addLog('Kill-Switch Triggered: Volatility spike beyond limits.', 'danger');
+                addLog('ACTION: Cancelling all resting orders.', 'info');
+                addLog('ACTION: $250k Trading Capital automatically withdrawn to Reserve.', 'info');
+                addLog('SYSTEM OFFLINE: Awaiting Founder review.', 'danger');
             }
         }
-
-        // Init Tab 7 on load
+        
+        // Init 
         setTimeout(() => triggerScenario('normal'), 500);
     </script>
 </body>
